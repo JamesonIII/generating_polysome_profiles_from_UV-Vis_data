@@ -1,0 +1,45 @@
+```{r packages}
+library("ggplot2")
+library("tidyverse")
+library("zoo")
+```
+```{r Data Import}
+Polysome_data<-read.csv("2021_06_18_C.csv", 
+               header = FALSE, 
+               col.names = c("Time", "Abs", "x"), #All columns that exist in the csv need to be renamed when using this command
+               nrow = 7245, # calculate from the number of rows from the begining - 2. This needs to be changed for each csv as the number of reads will be different for each experiment.
+               skip = 2) #Keep this the same as it will skip the header, then the names in the first row.
+               
+
+Polysome_data_m <- Polysome_data %>%
+  dplyr::mutate(Abs_100 = zoo::rollmean(Polysome_data$Abs, 100, fill = NA))
+                
+```
+
+```{r Polysome Plotting}
+ggplot(Polysome_data_m, aes(Time, Abs_100-1.4)) +
+  geom_path() +
+  geom_vline(xintercept =c(1.75 ,2.5, 3.25, 4, 4.75, 5.5, 6.25, 7, 7.75, 8.5, 9.25, 10, 10.75, 11.5),
+             linetype ="dotted") +
+  scale_x_continuous("Sedimentation →", 
+                     breaks = c(2,3,4,5,6,7,8,9,10),
+                     labels = c(2,"",4,"",6,"",8,"",10),
+                     limits = c(1.75, 11.5), 
+                     sec.axis = sec_axis(~.,name = "Fraction", 
+                                         breaks = c(1.75,2.5,3.25,4,4.75,5.5,6.25,7,7.75,8.5,9.25,10, 10.75) +.375, 
+                                         labels = c("",3,"",5,"",7,"",9,"",11,"",13,"")))+
+  ylim(0.2, 1.2) +
+  labs(title = "S. viridis WT Polysome Profile; 1:55") +
+  xlab("Time (mins)") +
+  ylab("Absorption") +
+  theme(panel.background = element_rect(),
+        axis.line.x.bottom = element_line( color = "black", size = 1, linetype = "solid"),
+        axis.line.y = element_line( color = "black", size = 1, linetype = "solid"),
+        axis.text = element_text(colour = "Black", size = rel(1)),
+        axis.ticks.x.top = element_blank(),
+        plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"),
+        plot.background = element_rect(fill = "white",
+                                       colour = "black",
+                                       size = 1))
+
+```
